@@ -327,7 +327,7 @@ class Macro {
                 var __ret = ${parse(mkComplex(fields).toType().sure(), pos)};
                 ${ESwitch(macro __ret, cases, macro throw new tink.core.Error('Cannot process '+Std.string(__ret))).at(pos)};
               }
-              
+              trace(ret.toString());
               ret;
             case v: 
               pos.error('Cannot parse ${t.toString()}');
