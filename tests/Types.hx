@@ -39,6 +39,7 @@ enum Item {
   @:json({ type: 'sword' }) Sword(damage:{max:Int});
   @:json({ type: 'shield' }) Shield(shield:{armor:Int});
   @:json({ type: 'staff' }) Staff(block:Float, ?magic:Int);
+  @:json({ type: 'cape' }) Cape(color:Null<String>);
   Potion(effect:PotionEffect);
 }
 
