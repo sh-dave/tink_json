@@ -86,6 +86,13 @@ class ParserTest {
     ));
   }
 
+  public function nestedWithAlias() {
+    return assert(typedCompare(
+      Custom({signature: '() -> Void' }),
+      parse('{ "type": "fn", "function": "() -> Void" }')
+    ));
+  }
+
   public function native() {
     var o:{@:json('default') var _default:Int;} = parse('{"default":1}');
     return assert(compare({_default:1}, o));
@@ -119,8 +126,7 @@ class ParserTest {
 
   public function representationPriority() {
     var c:Contraption = parse('[12]');
-    asserts.assert(c.foo == 12);
-    return asserts.done();
+    return assert(c.foo == 12);
   }
 
   public function invalidEnumAbstract() {
@@ -289,8 +295,7 @@ class ParserTest {
   }
 
   public function issue51() {
-    asserts.assert(parse(('ab':FinalUnification)).match(Failure(_)));
-    return asserts.done();
+    return assert(parse(('ab':FinalUnification)).match(Failure(_)));
   }
   #end
 

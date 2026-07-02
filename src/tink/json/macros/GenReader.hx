@@ -19,7 +19,8 @@ class GenReader extends GenBase {
     super(':jsonParse', crawler);
   }
 
-  static var OPTIONAL:Metadata = [{ name: ':optional', params:[], pos: (macro null).pos }];
+  static var EXPLICIT:Metadata = [{ name: ':explicit', params:[], pos: (macro null).pos }];
+  static var OPTIONAL = EXPLICIT.concat([{ name: ':optional', params:[], pos: (macro null).pos }]);
 
   public function wrap(placeholder:Expr, ct:ComplexType):Function
     return placeholder.func(ct);
@@ -94,7 +95,7 @@ class GenReader extends GenBase {
           optional = f.optional || IGNORE_MISSING_FIELDS;
 
       var option = switch f.type.reduce() {
-        case TEnum(_.get() => {pack:['haxe','ds'], name:'Option'}, [v]): Some(v);
+        case TEnum(_.get() => {pack:['haxe','ds'], name:'Option'}, [v]) if (!Lambda.exists(f.meta, m -> m.name == ':explicit')): Some(v);
         default: None;
       }
 
@@ -289,6 +290,7 @@ class GenReader extends GenBase {
             access: f.access,
             type: f.type,
             optional: same.optional || f.optional,
+            meta: same.meta.concat(f.meta),
           }
         case other:
           fields[f.name] = {
@@ -297,6 +299,7 @@ class GenReader extends GenBase {
             access: f.access,
             type: (macro:tink.json.Serialized<tink.core.Any>).toType().sure(),
             optional: other.optional || f.optional,
+            meta: other.meta.concat(f.meta),
           }
       }
 
@@ -304,7 +307,7 @@ class GenReader extends GenBase {
       return TAnonymous([for (f in fields) {
         name: f.name,
         pos: f.pos,
-        meta: if (f.optional) OPTIONAL else [],
+        meta: (if (f.optional) OPTIONAL else EXPLICIT).concat(f.meta.filter(m -> m.name == ':json')),
         kind: FProp(f.access.get, f.access.set, f.type.toComplex()),
       }]);
 
@@ -329,6 +332,7 @@ class GenReader extends GenBase {
             type: mkComplex(cfields).toType().sure(),
             pos: c.pos,
             access: { get: 'default', set: 'default' },
+            meta: [],
           });
 
           cases.push({
@@ -366,6 +370,7 @@ class GenReader extends GenBase {
               type: f.expr.typeof().sure(),
               optional: true,
               access: { get: 'default', set: 'default' },
+              meta: [],
             });
 
         case v:
@@ -624,6 +629,7 @@ private typedef LiteInfo = {
   var type(default, never):Type;
   var optional(default, never):Bool;
   var access(default, never):FieldAccessInfo;
+  var meta(default, never):Metadata;
 }
 
 private typedef Branch = { ?expr:Expr, children:Map<Int, Branch> };
